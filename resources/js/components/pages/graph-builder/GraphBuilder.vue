@@ -5,9 +5,13 @@
     <div class="row">
       <div class="col">
         <DropdownComponent
-          :items="items"
+          :items="computedCountries"
           placeholder="Select an option"
-          @update:selectedItem="handleSelectedItemChange"
+          :multi-select="true"
+          @update:selectedItems="
+            (selectedItems) =>
+              handleSelectedItemChange(selectedItems, 'countries')
+          "
         />
       </div>
       <div class="col"></div>
@@ -16,20 +20,64 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import DropdownComponent from '../../general/DropdownComponent.vue';
+import GraphBuilderMixin from './GraphBuilderMixin';
 
-const items = ref([
-  { value: 'value1', label: 'Label 1' },
-  { value: 'value2', label: 'Label 2' },
-  // Add more items as needed
-]);
+const { indicators, countries, graphTypes } = GraphBuilderMixin.data();
+const { fetchData } = GraphBuilderMixin.methods;
 
-const handleSelectedItemChange = (selectedValue: string) => {
-  console.log('Selected item:', selectedValue);
-  // Handle the selected item value in the parent component
+// Wrap countries in a ref to enable reactivity
+const reactiveCountries = ref(countries);
+
+const selectedIndicator = ref('');
+const selectedCountry = ref('');
+const selectedGraphType = ref('');
+
+// Use computed to provide the list of countries
+const computedCountries = computed(() => reactiveCountries.value);
+
+const handleSelectedItemChange = (
+  selectedItems: Array<string>,
+  type: string
+) => {
+  console.log(selectedItems);
+
+  switch (type) {
+    case 'countries':
+      reactiveCountries.value.forEach((country) => {
+        // Update selected state based on whether the country is in selectedItems
+        country.selected = selectedItems.includes(country.value);
+      });
+      break;
+  }
+};
+
+const createGraph = async () => {
+  if (
+    !selectedIndicator.value ||
+    !selectedCountry.value ||
+    !selectedGraphType.value
+  ) {
+    alert('Please select all fields before creating a graph.');
+    return;
+  }
+
+  const startYear = 2010;
+  const endYear = 2022;
+
+  const data = await fetchData(
+    selectedIndicator.value,
+    selectedCountry.value,
+    startYear,
+    endYear
+  );
+
+  // Integrate graph drawing logic using the fetched data
+  console.log('Data to visualize:', data);
 };
 </script>
+
 <style scoped>
 .error {
   color: red;
