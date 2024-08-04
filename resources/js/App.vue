@@ -1,14 +1,13 @@
 <template>
-    <div>
-      <!-- Render the ExampleComponent correctly -->
-      <ExampleComponent msg="my message"/>
-    </div>
-  </template>
-  
-  <script setup>
-  import ExampleComponent from "./components/ExampleComponent.vue";
-  </script>
-  
-  <style>
-  /* Add your styles here */
-  </style>
+  <div>
+    <Root />
+  </div>
+</template>
+
+<script setup lang="ts">
+import Root from './components/Root.vue';
+</script>
+
+<style>
+@import url('../css/bootstrap.min.css');
+</style>
