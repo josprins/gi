@@ -4,7 +4,8 @@
     <p>Please fill out the form below to configure your graph settings</p>
     <div class="row">
       <div class="col">
-        <DropdownComponent
+        <h4>Select countries</h4>
+        <MultiSelectComponent
           :items="computedCountries"
           placeholder="Select an option"
           :multi-select="true"
@@ -13,44 +14,107 @@
               handleSelectedItemChange(selectedItems, 'countries')
           "
         />
+        <fieldset>
+          <legend class="mt-4">Graph type</legend>
+          <div class="form-check pointer">
+            <input
+              class="form-check-input pointer"
+              type="radio"
+              name="graphType"
+              id="graphType1"
+              value="option1"
+            />
+            <label class="form-check-label pointer" for="graphType1">
+              Line
+            </label>
+          </div>
+          <div class="form-check pointer">
+            <input
+              class="form-check-input pointer"
+              type="radio"
+              name="graphType"
+              id="graphType2"
+              value="option2"
+            />
+            <label class="form-check-label pointer" for="graphType2">
+              Bar
+            </label>
+          </div>
+          <div class="form-check pointer">
+            <input
+              class="form-check-input pointer"
+              type="radio"
+              name="graphType"
+              id="graphType3"
+              value="option3"
+            />
+            <label class="form-check-label pointer" for="graphType3">
+              Pie
+            </label>
+          </div>
+        </fieldset>
       </div>
-      <div class="col"></div>
+      <div class="col">
+        <h4>Select range in years</h4>
+        <DropdownComponent
+          label="Start"
+          :items="yearRange"
+          @update:modelValue="(year) => updateRange(year, 'start')"
+        />
+        <DropdownComponent
+          label="End"
+          :items="yearRange"
+          @update:modelValue="(year) => updateRange(year, 'end')"
+        />
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed } from 'vue';
+import MultiSelectComponent from '../../general/MultiSelectComponent.vue';
 import DropdownComponent from '../../general/DropdownComponent.vue';
 import GraphBuilderMixin from './GraphBuilderMixin';
 
+// Data from mixin
 const { indicators, countries, graphTypes } = GraphBuilderMixin.data();
 const { fetchData } = GraphBuilderMixin.methods;
 
-// Wrap countries in a ref to enable reactivity
+// Refs
 const reactiveCountries = ref(countries);
-
 const selectedIndicator = ref('');
 const selectedCountry = ref('');
 const selectedGraphType = ref('');
+let yearStart: number | null = null;
+let yearEnd: number | null = null;
 
-// Use computed to provide the list of countries
+// Computed
 const computedCountries = computed(() => reactiveCountries.value);
+const yearRange = computed(() => {
+  const currentYear = new Date().getFullYear();
+  const startYear = currentYear - 10;
 
+  return Array.from({ length: 21 }, (_, i) => startYear + i);
+});
+
+// Functions
 const handleSelectedItemChange = (
   selectedItems: Array<string>,
   type: string
 ) => {
-  console.log(selectedItems);
-
   switch (type) {
     case 'countries':
       reactiveCountries.value.forEach((country) => {
-        // Update selected state based on whether the country is in selectedItems
-        country.selected = selectedItems.includes(country.value);
+        country.selected = selectedItems.includes(country.label);
       });
       break;
   }
+};
+
+const updateRange = (year: number, type: string) => {
+  if (type === 'start') yearStart = year;
+  if (type === 'end') yearEnd = year;
 };
 
 const createGraph = async () => {
@@ -81,21 +145,5 @@ const createGraph = async () => {
 <style scoped>
 .error {
   color: red;
-}
-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 20px;
-}
-
-th,
-td {
-  border: 1px solid #ccc;
-  padding: 8px;
-  text-align: left;
-}
-
-th {
-  background-color: #f4f4f4;
 }
 </style>

@@ -10,4 +10,5 @@ import Root from './components/Root.vue';
 
 <style>
 @import url('../css/bootstrap.min.css');
+@import url('../css/app.css');
 </style>

@@ -12,4 +12,4 @@ class ProxyController extends Controller
         $response = Http::get('https://api.worldbank.org/v2/country/BR/indicator/NY.GDP.MKTP.CD?format=json&date=2010:2022');
         return response()->json($response->json());
     }
-}
+¬
