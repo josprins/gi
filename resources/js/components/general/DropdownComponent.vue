@@ -11,12 +11,11 @@
 // Props
 const props = withDefaults(
   defineProps<{
-    items: Array<number>;
+    items: Array<number | string>;
     placeholder?: string;
     label?: string;
   }>(),
   {
-    multiSelect: false,
     label: undefined,
     placeholder: 'Select an option',
   }
@@ -28,7 +27,15 @@ const emit = defineEmits(['update:modelValue']);
 // Functions
 const emitSelection = (event: Event) => {
   const target = event.target as HTMLSelectElement;
-  emit('update:modelValue', Number(target.value));
+  let payload: string | number = target.value;
+
+  const numberValue = Number(target.value);
+
+  if (!isNaN(numberValue)) {
+    payload = numberValue;
+  }
+
+  emit('update:modelValue', payload);
 };
 </script>
 <style lang=""></style>

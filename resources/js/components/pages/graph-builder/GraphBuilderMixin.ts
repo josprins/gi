@@ -1,4 +1,5 @@
 import axios from 'axios';
+import Vue from 'vue';
 
 // Define a mixin for fetching data from the World Bank API
 export default {
@@ -178,20 +179,20 @@ export default {
       startYear: number,
       endYear: number
     ) {
-      try {
-        const url = `https://api.worldbank.org/v2/country/${selectedCountry}/indicator/${selectedIndicator}?format=json&date=${startYear}:${endYear}`;
-        const response = await axios.get(url);
+      console.log({
+        selectedCountry,
+        selectedIndicator,
+        startYear,
+        endYear,
+      });
 
-        if (response.data && response.data[1]) {
-          // Process the data as needed for your graph
-          console.log('Fetched Data:', response.data[1]);
-          return response.data[1];
-        } else {
-          throw new Error('No data available');
-        }
+      const url = `/api/data?selectedCountry=${selectedCountry}&selectedIndicator=${selectedIndicator}&startYear=${startYear}&endYear=${endYear}`;
+
+      try {
+        const response = await axios.get(url);
+        return response.data;
       } catch (error) {
         console.error('Error fetching data:', error);
-        return [];
       }
     },
   },

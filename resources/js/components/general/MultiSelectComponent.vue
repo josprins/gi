@@ -13,7 +13,7 @@
           v-for="item in props.items"
           :key="item.value"
           :value="item.value"
-          @click="handleSelection(item.label)"
+          @click="handleSelection(item)"
         >
           <input type="checkbox" :checked="item.selected" />
           {{ item.label }}
@@ -54,20 +54,31 @@ const emit = defineEmits<{
 
 // Refs
 const selectedItems = ref<Array<string>>([]);
+const selectedItemValues = ref<Array<string>>([]);
 
+type Country = {
+  label: string;
+  value: string;
+  selected: boolean;
+};
 // Functions
-const handleSelection = (country: string) => {
-  const selectedValue = country;
+const handleSelection = (country: Country) => {
+  const selectedValue = country.value;
+  const selectedLabel = country.label;
 
-  if (selectedItems.value.includes(selectedValue)) {
+  if (selectedItems.value.includes(selectedLabel)) {
     selectedItems.value = selectedItems.value.filter(
+      (item) => item !== selectedLabel
+    );
+    selectedItemValues.value = selectedItemValues.value.filter(
       (item) => item !== selectedValue
     );
   } else {
-    selectedItems.value.push(selectedValue);
+    selectedItems.value.push(selectedLabel);
+    selectedItemValues.value.push(selectedValue);
   }
 
-  emit('update:selectedItems', selectedItems.value);
+  emit('update:selectedItems', selectedItemValues.value);
 };
 </script>
 

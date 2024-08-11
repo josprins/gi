@@ -16,40 +16,21 @@
         />
         <fieldset>
           <legend class="mt-4">Graph type</legend>
-          <div class="form-check pointer">
+          <div
+            v-for="type in graphTypes"
+            :key="type.value"
+            class="form-check pointer"
+          >
             <input
               class="form-check-input pointer"
               type="radio"
               name="graphType"
-              id="graphType1"
-              value="option1"
+              :id="type.value"
+              :value="type.value"
+              v-model="selectedGraphType"
             />
-            <label class="form-check-label pointer" for="graphType1">
-              Line
-            </label>
-          </div>
-          <div class="form-check pointer">
-            <input
-              class="form-check-input pointer"
-              type="radio"
-              name="graphType"
-              id="graphType2"
-              value="option2"
-            />
-            <label class="form-check-label pointer" for="graphType2">
-              Bar
-            </label>
-          </div>
-          <div class="form-check pointer">
-            <input
-              class="form-check-input pointer"
-              type="radio"
-              name="graphType"
-              id="graphType3"
-              value="option3"
-            />
-            <label class="form-check-label pointer" for="graphType3">
-              Pie
+            <label class="form-check-label pointer" :for="type.value">
+              {{ type.label }}
             </label>
           </div>
         </fieldset>
@@ -66,13 +47,22 @@
           :items="yearRange"
           @update:modelValue="(year) => updateRange(year, 'end')"
         />
+        <h4 class="mt-5">Select what data you want to show</h4>
+        <DropdownComponent
+          label="Graph Indicator"
+          :items="mappedIndicators"
+          @update:modelValue="updateIndicator"
+        />
       </div>
     </div>
+    <button class="btn btn-success mt-5 build-button" @click="createGraph">
+      Create graph
+    </button>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, Ref } from 'vue';
 import MultiSelectComponent from '../../general/MultiSelectComponent.vue';
 import DropdownComponent from '../../general/DropdownComponent.vue';
 import GraphBuilderMixin from './GraphBuilderMixin';
@@ -84,7 +74,7 @@ const { fetchData } = GraphBuilderMixin.methods;
 // Refs
 const reactiveCountries = ref(countries);
 const selectedIndicator = ref('');
-const selectedCountry = ref('');
+const selectedCountries: Ref<string[]> = ref([]);
 const selectedGraphType = ref('');
 let yearStart: number | null = null;
 let yearEnd: number | null = null;
@@ -98,6 +88,10 @@ const yearRange = computed(() => {
   return Array.from({ length: 21 }, (_, i) => startYear + i);
 });
 
+const mappedIndicators = computed(() =>
+  indicators.map((indicator) => indicator.label)
+);
+
 // Functions
 const handleSelectedItemChange = (
   selectedItems: Array<string>,
@@ -106,8 +100,10 @@ const handleSelectedItemChange = (
   switch (type) {
     case 'countries':
       reactiveCountries.value.forEach((country) => {
-        country.selected = selectedItems.includes(country.label);
+        country.selected = selectedItems.includes(country.value);
       });
+
+      selectedCountries.value = selectedItems;
       break;
   }
 };
@@ -117,33 +113,50 @@ const updateRange = (year: number, type: string) => {
   if (type === 'end') yearEnd = year;
 };
 
+const updateIndicator = (indicator: string) =>
+  (selectedIndicator.value = indicator);
+
 const createGraph = async () => {
   if (
     !selectedIndicator.value ||
-    !selectedCountry.value ||
-    !selectedGraphType.value
+    !selectedGraphType.value ||
+    yearStart === null ||
+    yearEnd === null
   ) {
     alert('Please select all fields before creating a graph.');
     return;
   }
 
-  const startYear = 2010;
-  const endYear = 2022;
+  let bla: any = {};
 
-  const data = await fetchData(
-    selectedIndicator.value,
-    selectedCountry.value,
-    startYear,
-    endYear
+  const indicatorCode = indicators.find(
+    (ind) => ind.label === selectedIndicator.value
   );
 
+  selectedCountries.value.forEach(async (country: string) => {
+    const data: any = await fetchData(
+      indicatorCode?.code ?? '',
+      country,
+      yearStart!,
+      yearEnd!
+    );
+
+    bla[country] = data;
+  });
+
+  console.log(bla);
+
   // Integrate graph drawing logic using the fetched data
-  console.log('Data to visualize:', data);
+  console.log('Data to visualize:', bla);
 };
 </script>
 
 <style scoped>
 .error {
   color: red;
+}
+
+.build-button {
+  width: 16rem;
 }
 </style>
