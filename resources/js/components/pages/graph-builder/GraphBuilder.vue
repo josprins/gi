@@ -67,7 +67,7 @@ import MultiSelectComponent from '../../general/MultiSelectComponent.vue';
 import DropdownComponent from '../../general/DropdownComponent.vue';
 import GraphBuilderMixin from './GraphBuilderMixin';
 
-// Data from mixin
+// Data & methods from mixin
 const { indicators, countries, graphTypes } = GraphBuilderMixin.data();
 const { fetchData } = GraphBuilderMixin.methods;
 
